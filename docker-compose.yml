@@ -1,0 +1,176 @@
+# Especifica la versión del formato de Docker Compose
+version: '3.8'
+
+services:
+  # ---------------------------------------------------------
+  # 1. SERVIDOR EUREKA (Debe ser el primero en levantar)
+  # ---------------------------------------------------------
+  eureka-server:
+    build:
+      # Carpeta donde está el código y el Dockerfile de Eureka
+      context: ./EUREKA-Server
+      dockerfile: Dockerfile
+    ports:
+      # Puerto estándar de Eureka (8761 en tu PC -> 8761 en el contenedor)
+      - "8761:8761"
+
+  # ---------------------------------------------------------
+  # 2. SERVIDOR DE CONFIGURACIÓN (Depende de Eureka)
+  # ---------------------------------------------------------
+  config-server:
+    build:
+      # Carpeta donde está el código y el Dockerfile de Config-Server
+      context: ./Config-Server
+      dockerfile: Dockerfile
+    ports:
+      # Puerto del Config Server (8083 en tu PC -> 8083 en el contenedor)
+      - "8083:8083"
+    depends_on:
+      # Docker esperará a que Eureka inicie antes de levantar Config-Server
+      - eureka-server
+    environment:
+      # Sobrescribe la URL de Eureka: en lugar de "localhost", usa el nombre del contenedor "eureka-server"
+      - eureka.client.serviceUrl.defaultZone=http://eureka-server:8761/eureka/
+
+  # ---------------------------------------------------------
+  # 3. MICROSERVICIO REST-EMPLOYEE (Depende de Config y Eureka)
+  # ---------------------------------------------------------
+  rest-employee:
+    build:
+      # Carpeta donde está el código y el Dockerfile de REST-Employee
+      context: ./REST-Employee
+      dockerfile: Dockerfile
+    ports:
+      # Puerto del microservicio (9002 en tu PC -> 9002 en el contenedor)
+      - "9002:9002"
+    depends_on:
+      # Docker esperará a que ambos servicios inicien antes de levantar REST-Employee
+      - config-server
+      - eureka-server
+    environment:
+      # --- CONFIGURACIÓN DEL CONFIG SERVER ---
+      # Sobrescribe la URL del Config Server: buscar en "config-server" en vez de "localhost"
+      - spring.config.import=optional:configserver:http://config-server:8083
+      - spring.cloud.config.uri=http://config-server:8083
+      
+      # --- PERMITIR QUE LAS VARIABLES DE ENTORNO SOBRESCRIBAN AL CONFIG SERVER ---
+      # Por defecto, Spring Cloud Config da mayor prioridad a la configuración remota (del Config Server).
+      # Con esta propiedad en "true", le decimos a Spring que las variables de entorno locales
+      # (las de este bloque "environment") tengan prioridad y puedan sobrescribir lo que venga del Config Server.
+      - spring.cloud.config.override-none=true
+      
+      # --- CONFIGURACIÓN DE LA BASE DE DATOS ---
+      # Tu Config Server (GitHub) entrega la URL como "localhost:5432", pero dentro de Docker, "localhost"
+      # no apunta a tu PC. Usamos "host.docker.internal" para que Docker salga a buscar PostgreSQL
+      # en tu computadora real (Windows).
+      - spring.datasource.url=jdbc:postgresql://host.docker.internal:5432/bdprueba
+      - spring.datasource.username=postgres
+      - spring.datasource.password=root
+      - spring.datasource.driver-class-name=org.postgresql.Driver
+      
+      # --- CONFIGURACIÓN DE EUREKA ---
+      # Sobrescribe la URL de Eureka: buscar en "eureka-server" en vez de "localhost"
+      - eureka.client.serviceUrl.defaultZone=http://eureka-server:8761/eureka/
+      
+      # --- CONFIGURACIÓN DE RABBITMQ ---
+      # Tu application.yaml apunta RabbitMQ a "localhost". Con esta variable, Docker lo redirige
+      # a tu computadora real donde está instalado RabbitMQ.
+      - spring.rabbitmq.host=host.docker.internal
+
+  # ---------------------------------------------------------
+  # 4. API GATEWAY (Depende de Config y Eureka)
+  # ---------------------------------------------------------
+  gateway-service:
+    build:
+      context: ./Gateway-Service
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082" # <-- REVISA TU PUERTO DEL GATEWAY
+    depends_on:
+      - config-server
+      - eureka-server
+    environment:
+      - spring.config.import=optional:configserver:http://config-server:8083
+      - spring.cloud.config.uri=http://config-server:8083
+      - spring.cloud.config.override-none=true
+      - eureka.client.serviceUrl.defaultZone=http://eureka-server:8761/eureka/
+      
+  # ---------------------------------------------------------
+  # 5. IDENTITY SERVICE (Seguridad y Autenticación)
+  # ---------------------------------------------------------
+  identity-service:
+    build:
+      context: ./Identity-Service
+      dockerfile: Dockerfile
+    ports:
+      - "9005:9005" # <-- REVISA TU PUERTO
+    depends_on:
+      - config-server
+      - eureka-server
+    environment:
+      - spring.config.import=optional:configserver:http://config-server:8083
+      - spring.cloud.config.uri=http://config-server:8083
+      - spring.cloud.config.override-none=true
+      - eureka.client.serviceUrl.defaultZone=http://eureka-server:8761/eureka/
+      - spring.datasource.url=jdbc:postgresql://host.docker.internal:5432/bdprueba
+      - spring.datasource.username=postgres
+      - spring.datasource.password=root
+      - spring.datasource.driver-class-name=org.postgresql.Driver
+
+  # ---------------------------------------------------------
+  # 6. REST-CUENTA
+  # ---------------------------------------------------------
+  rest-cuenta:
+    build:
+      context: ./REST-Cuenta
+      dockerfile: Dockerfile
+    ports:
+      - "9004:9004" # <-- REVISA TU PUERTO
+    depends_on:
+      - config-server
+      - eureka-server
+    environment:
+      - spring.config.import=optional:configserver:http://config-server:8083
+      - spring.cloud.config.uri=http://config-server:8083
+      - spring.cloud.config.override-none=true
+      - eureka.client.serviceUrl.defaultZone=http://eureka-server:8761/eureka/
+      - spring.datasource.url=jdbc:postgresql://host.docker.internal:5432/bdprueba
+      - spring.datasource.username=postgres
+      - spring.datasource.password=root
+      - spring.datasource.driver-class-name=org.postgresql.Driver
+  # ---------------------------------------------------------
+  # 7. SALUDO-SERVICE
+  # ---------------------------------------------------------
+  saludo-service:
+    build:
+      context: ./Saludo-Service
+      dockerfile: Dockerfile
+    ports:
+      - "9001:9001" # <-- REVISA TU PUERTO
+    depends_on:
+      - config-server
+      - eureka-server
+    environment:
+      - spring.config.import=optional:configserver:http://config-server:8083
+      - spring.cloud.config.uri=http://config-server:8083
+      - spring.cloud.config.override-none=true
+      - eureka.client.serviceUrl.defaultZone=http://eureka-server:8761/eureka/
+  # ---------------------------------------------------------
+  # 8. NOTIFICACION-SERVICE (Consume RabbitMQ)
+  # ---------------------------------------------------------
+  notificacion-service:
+    build:
+      context: ./Notificacion-Service
+      dockerfile: Dockerfile
+    ports:
+      - "9003:9003" # <-- REVISA TU PUERTO
+    depends_on:
+      - config-server
+      - eureka-server
+    environment:
+      - spring.config.import=optional:configserver:http://config-server:8083
+      - spring.cloud.config.uri=http://config-server:8083
+      - spring.cloud.config.override-none=true
+      - eureka.client.serviceUrl.defaultZone=http://eureka-server:8761/eureka/
+      - spring.rabbitmq.host=host.docker.internal
+

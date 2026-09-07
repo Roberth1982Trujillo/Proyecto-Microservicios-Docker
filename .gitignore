@@ -1,0 +1,6 @@
+# Ignorar todo el contenido de la carpeta por defecto
+*
+
+# Excepto los siguientes archivos
+!docker-compose.yml
+!.gitignore
