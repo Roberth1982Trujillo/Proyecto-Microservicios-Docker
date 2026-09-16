@@ -64,8 +64,8 @@ services:
       # no apunta a tu PC. Usamos "host.docker.internal" para que Docker salga a buscar PostgreSQL
       # en tu computadora real (Windows).
       - spring.datasource.url=jdbc:postgresql://host.docker.internal:5432/bdprueba
-      - spring.datasource.username=postgres
-      - spring.datasource.password=root
+      - spring.datasource.username=${DB_USERNAME}
+      - spring.datasource.password=${DB_PASSWORD}
       - spring.datasource.driver-class-name=org.postgresql.Driver
       
       # --- CONFIGURACIÓN DE EUREKA ---
@@ -113,8 +113,8 @@ services:
       - spring.cloud.config.override-none=true
       - eureka.client.serviceUrl.defaultZone=http://eureka-server:8761/eureka/
       - spring.datasource.url=jdbc:postgresql://host.docker.internal:5432/bdprueba
-      - spring.datasource.username=postgres
-      - spring.datasource.password=root
+      - spring.datasource.username=${DB_USERNAME}
+      - spring.datasource.password=${DB_PASSWORD}
       - spring.datasource.driver-class-name=org.postgresql.Driver
 
   # ---------------------------------------------------------
@@ -135,8 +135,8 @@ services:
       - spring.cloud.config.override-none=true
       - eureka.client.serviceUrl.defaultZone=http://eureka-server:8761/eureka/
       - spring.datasource.url=jdbc:postgresql://host.docker.internal:5432/bdprueba
-      - spring.datasource.username=postgres
-      - spring.datasource.password=root
+      - spring.datasource.username=${DB_USERNAME}
+      - spring.datasource.password=${DB_PASSWORD}
       - spring.datasource.driver-class-name=org.postgresql.Driver
   # ---------------------------------------------------------
   # 7. SALUDO-SERVICE
