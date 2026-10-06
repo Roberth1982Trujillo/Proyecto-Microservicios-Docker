@@ -18,10 +18,7 @@ services:
   # 2. SERVIDOR DE CONFIGURACIÓN (Depende de Eureka)
   # ---------------------------------------------------------
   config-server:
-    build:
-      # Carpeta donde está el código y el Dockerfile de Config-Server
-      context: ./Config-Server
-      dockerfile: Dockerfile
+    image: ghcr.io/roberth1982trujillo/config-service:latest
     ports:
       # Puerto del Config Server (8083 en tu PC -> 8083 en el contenedor)
       - "8083:8083"
@@ -36,10 +33,7 @@ services:
   # 3. MICROSERVICIO REST-EMPLOYEE (Depende de Config y Eureka)
   # ---------------------------------------------------------
   rest-employee:
-    build:
-      # Carpeta donde está el código y el Dockerfile de REST-Employee
-      context: ./REST-Employee
-      dockerfile: Dockerfile
+    image: ghcr.io/roberth1982trujillo/rest-employee:latest
     ports:
       # Puerto del microservicio (9002 en tu PC -> 9002 en el contenedor)
       - "9002:9002"
@@ -81,9 +75,7 @@ services:
   # 4. API GATEWAY (Depende de Config y Eureka)
   # ---------------------------------------------------------
   gateway-service:
-    build:
-      context: ./Gateway-Service
-      dockerfile: Dockerfile
+    image: ghcr.io/roberth1982trujillo/gateway-service:latest
     ports:
       - "8082:8082" # <-- REVISA TU PUERTO DEL GATEWAY
     depends_on:
@@ -99,9 +91,7 @@ services:
   # 5. IDENTITY SERVICE (Seguridad y Autenticación)
   # ---------------------------------------------------------
   identity-service:
-    build:
-      context: ./Identity-Service
-      dockerfile: Dockerfile
+    image: ghcr.io/roberth1982trujillo/identity-service:latest
     ports:
       - "9005:9005" # <-- REVISA TU PUERTO
     depends_on:
@@ -121,9 +111,7 @@ services:
   # 6. REST-CUENTA
   # ---------------------------------------------------------
   rest-cuenta:
-    build:
-      context: ./REST-Cuenta
-      dockerfile: Dockerfile
+    image: ghcr.io/roberth1982trujillo/rest-cuenta:latest
     ports:
       - "9004:9004" # <-- REVISA TU PUERTO
     depends_on:
@@ -142,9 +130,7 @@ services:
   # 7. SALUDO-SERVICE
   # ---------------------------------------------------------
   saludo-service:
-    build:
-      context: ./Saludo-Service
-      dockerfile: Dockerfile
+    image: ghcr.io/roberth1982trujillo/saludo-service:latest
     ports:
       - "9001:9001" # <-- REVISA TU PUERTO
     depends_on:
@@ -159,9 +145,7 @@ services:
   # 8. NOTIFICACION-SERVICE (Consume RabbitMQ)
   # ---------------------------------------------------------
   notificacion-service:
-    build:
-      context: ./Notificacion-Service
-      dockerfile: Dockerfile
+    image: ghcr.io/roberth1982trujillo/notificacion-service:latest
     ports:
       - "9003:9003" # <-- REVISA TU PUERTO
     depends_on:
