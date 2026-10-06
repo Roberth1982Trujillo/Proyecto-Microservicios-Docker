@@ -3,7 +3,7 @@ services:
   # 1. SERVIDOR EUREKA (Debe ser el primero en levantar)
   # ---------------------------------------------------------
   eureka-server:
-    image: ghcr.io/roberth1982trujillo/eureka-server:latest
+    image: ghcr.io/roberth1982trujillo/eureka-service:latest
     ports:
       # Puerto estándar de Eureka (8761 en tu PC -> 8761 en el contenedor)
       - "8761:8761"
@@ -105,7 +105,7 @@ services:
   # 6. REST-CUENTA
   # ---------------------------------------------------------
   rest-cuenta:
-    image: ghcr.io/roberth1982trujillo/rest-cuenta:latest
+    image: ghcr.io/roberth1982trujillo/rest-cuenta-service:latest
     ports:
       - "9004:9004" # <-- REVISA TU PUERTO
     depends_on:
